@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SD Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a0a;--s1:#131313;--s2:#1a1a1a;--s3:#222;--border:#282828;--text:#e8e8e8;--muted:#444;--muted2:#666;--accent:#c8ff57;--red:#e24b4a;--blue:#4a9eff;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;overflow-x:hidden;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;}}
+
+header{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.5rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100;gap:1rem;flex-wrap:wrap;}
+.logo{font-family:'Space Mono',monospace;font-size:.9rem;white-space:nowrap;}
+.logo em{color:var(--accent);font-style:normal;}
+.header-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;}
+.status-pill{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);white-space:nowrap;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);}
+.dot.on{background:#4caf50;box-shadow:0 0 6px #4caf5055;}
+
+input[type=text],input[type=number],input[type=password],textarea,select{background:var(--s2);border:1px solid var(--border);border-radius:3px;padding:6px 9px;color:var(--text);font-size:12px;outline:none;font-family:'Noto Sans JP',sans-serif;transition:border-color .15s;width:100%;}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);}
+textarea{resize:vertical;line-height:1.6;}
+::placeholder{color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:3px;font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);transition:all .15s;white-space:nowrap;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn-accent{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;}
+.btn-accent:hover{opacity:.85;color:#000;border-color:var(--accent);}
+.btn-gen{width:100%;padding:13px;font-size:13px;justify-content:center;margin-top:1rem;}
+.btn-sm{padding:4px 10px;font-size:10px;}
+.btn-icon{width:26px;height:26px;padding:0;justify-content:center;font-size:13px;flex-shrink:0;}
+
+.app-body{display:grid;grid-template-columns:290px 1fr;height:calc(100vh - 52px);}
+.sidebar{border-right:1px solid var(--border);overflow-y:auto;padding:.9rem;}
+.content{overflow-y:auto;padding:.9rem;}
+
+.tabs{display:flex;gap:2px;margin-bottom:.9rem;background:var(--s1);border:1px solid var(--border);border-radius:4px;padding:3px;}
+.tab{flex:1;padding:6px;text-align:center;border-radius:2px;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);border:none;background:transparent;transition:all .15s;letter-spacing:.04em;}
+.tab.active{background:var(--accent);color:#000;font-weight:700;}
+
+.section{margin-bottom:1.1rem;}
+.section-title{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between;}
+.ctrl-row{margin-bottom:.65rem;}
+.ctrl-label{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.06em;margin-bottom:.3rem;display:flex;justify-content:space-between;}
+.ctrl-label span{color:var(--accent);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+
+/* Expression Blender */
+.expr-row{display:grid;grid-template-columns:62px 1fr 26px;align-items:center;gap:.4rem;margin-bottom:.45rem;}
+.expr-name{font-size:11px;color:var(--muted2);}
+.expr-val{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);text-align:right;}
+
+/* Timeline */
+.tl-wrap{background:var(--s1);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:.9rem;}
+.tl-head{display:flex;align-items:center;justify-content:space-between;padding:.45rem .7rem;border-bottom:1px solid var(--border);}
+.tl-canvas{position:relative;height:72px;background:var(--s2);overflow:hidden;cursor:crosshair;user-select:none;}
+.tl-ruler{position:absolute;top:0;left:0;right:0;height:18px;background:var(--s1);border-bottom:1px solid var(--border);}
+.tl-kf{position:absolute;top:18px;bottom:0;width:3px;cursor:ew-resize;}
+.tl-kf-dot{position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;border:2px solid var(--s1);}
+.tl-kf-lbl{position:absolute;top:24px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:8px;white-space:nowrap;}
+.tl-ph{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.35);pointer-events:none;}
+.kf-list{max-height:160px;overflow-y:auto;}
+.kf-item{display:grid;grid-template-columns:38px 1fr auto;gap:.35rem;align-items:center;padding:.45rem .7rem;border-bottom:1px solid var(--border);cursor:pointer;}
+.kf-item:hover{background:var(--s3);}
+.kf-item.sel{background:var(--s3);}
+.kf-item:last-child{border-bottom:none;}
+.kf-num{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);background:var(--s2);border-radius:2px;padding:2px 5px;text-align:center;}
+.kf-desc{font-size:10px;color:var(--muted2);line-height:1.4;}
+
+/* Sequencer */
+.seq-grid{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;margin-bottom:.6rem;}
+.seq-cell{aspect-ratio:1;border-radius:2px;border:1px solid var(--border);background:var(--s2);cursor:pointer;transition:all .1s;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.seq-cell.on{border-color:var(--accent);background:rgba(200,255,87,.12);}
+.seq-cell.playing{background:var(--accent);border-color:var(--accent);}
+.seq-exprs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.6rem;}
+.seq-expr{padding:4px 9px;font-size:11px;border-radius:2px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text);transition:all .1s;}
+.seq-expr.active{background:var(--accent);color:#000;border-color:var(--accent);}
+
+/* History */
+.hist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.65rem;}
+.hist-card{background:var(--s1);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.hist-card:hover{border-color:var(--accent);}
+.hist-thumb{width:100%;aspect-ratio:1;object-fit:cover;background:var(--s2);display:block;}
+.hist-info{padding:.45rem .6rem;}
+.hist-mode{font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);}
+.hist-time{font-size:10px;color:var(--muted2);}
+
+/* Preview */
+.preview{background:var(--s1);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:.9rem;}
+.preview-top{min-height:300px;display:flex;align-items:center;justify-content:center;position:relative;background:var(--s2);}
+.preview-hint{text-align:center;color:var(--muted);}
+.preview-hint p{font-size:12px;margin-top:.4rem;}
+.preview-btm{padding:.55rem .75rem;border-top:1px solid var(--border);display:flex;gap:.4rem;align-items:center;}
+.spinner-ring{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+
+.progress-wrap{background:var(--s1);border:1px solid var(--border);border-radius:4px;padding:.65rem .75rem;margin-bottom:.75rem;display:none;}
+.pb-bg{background:var(--s2);border-radius:2px;height:2px;overflow:hidden;margin-bottom:.35rem;}
+.pb-fill{height:100%;background:var(--accent);transition:width .4s;width:0%;}
+.pb-text{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);}
+
+.motion-box{background:var(--s2);border:1px solid var(--border);border-left:2px solid var(--blue);border-radius:3px;padding:.65rem;margin-bottom:.65rem;}
+.motion-out{background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:.65rem;font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);line-height:1.8;display:none;white-space:pre-wrap;margin-top:.5rem;max-height:150px;overflow-y:auto;}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;}
+.chip{padding:4px 10px;border-radius:2px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:11px;cursor:pointer;transition:all .15s;}
+.chip:hover{border-color:var(--accent);}
+.chip.active{background:var(--accent);color:#000;border-color:var(--accent);}
+
+@media(max-width:768px){.app-body{grid-template-columns:1fr;height:auto;}.sidebar{border-right:none;border-bottom:1px solid var(--border);}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">SD<em>.</em>STUDIO</div>
+  <div class="header-right">
+    <input type="text" id="sd-url" value="http://127.0.0.1:7860" style="width:190px;font-family:'Space Mono',monospace;">
+    <input type="password" id="claude-key" placeholder="Claude APIキー (sk-ant-...)" style="width:210px;">
+    <button class="btn btn-sm" onclick="checkConn()">接続確認</button>
+    <div class="status-pill"><div class="dot" id="sdot"></div><span id="stext">未接続</span></div>
+  </div>
+</header>
+
+<div class="app-body">
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="tabs" style="margin-bottom:.9rem;">
+    <button class="tab active" onclick="setMode('deforum')">DEFORUM</button>
+    <button class="tab" onclick="setMode('animatediff')">ANIMATE</button>
+    <button class="tab" onclick="setMode('svd')">SVD</button>
+  </div>
+
+  <!-- Expression Blender -->
+  <div class="section">
+    <div class="section-title">表情ブレンダー <button class="btn btn-sm" onclick="resetBlender()">リセット</button></div>
+    <div id="expr-sliders"></div>
+  </div>
+
+  <!-- Motion from prompt -->
+  <div class="section">
+    <div class="section-title">✦ AIモーション変換</div>
+    <div class="motion-box">
+      <div class="ctrl-label">自然言語で動きを記述</div>
+      <textarea id="motion-desc" rows="3" placeholder="例：ゆっくり左を向きながら笑顔になり、最後に驚いた表情で正面を向く"></textarea>
+      <button class="btn btn-accent btn-sm" style="margin-top:.4rem;width:100%;" onclick="parseMotion()">AIが動きに変換</button>
+    </div>
+    <div class="motion-out" id="motion-out"></div>
+  </div>
+
+  <!-- Camera/motion (Deforum) -->
+  <div id="sect-deforum" class="section">
+    <div class="section-title">カメラ・モーション</div>
+    <div class="two-col">
+      <div class="ctrl-row"><div class="ctrl-label">Translate X</div><input type="text" id="df-tx" value="0:(0)"></div>
+      <div class="ctrl-row"><div class="ctrl-label">Translate Y</div><input type="text" id="df-ty" value="0:(0)"></div>
+      <div class="ctrl-row"><div class="ctrl-label">Rotation Y</div><input type="text" id="df-ry" value="0:(0)"></div>
+      <div class="ctrl-row"><div class="ctrl-label">Zoom</div><input type="text" id="df-zoom" value="0:(1.02)"></div>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">アニメーションモード</div>
+      <div class="chips" id="anim-chips">
+        <button class="chip active" data-val="2D" onclick="selectChipIn('anim-chips',this)">2D</button>
+        <button class="chip" data-val="3D" onclick="selectChipIn('anim-chips',this)">3D</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SVD params -->
+  <div id="sect-svd" class="section" style="display:none;">
+    <div class="section-title">SVD パラメーター</div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">Motion Bucket ID <span id="svd-mb-v">90</span></div>
+      <input type="range" min="1" max="255" value="90" oninput="document.getElementById('svd-mb-v').textContent=this.value" id="svd-mb">
+      <p style="font-size:10px;color:var(--muted2);margin-top:2px;">低=静的 高=激しい動き</p>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">Augmentation <span id="svd-aug-v">0.02</span></div>
+      <input type="range" min="0" max="0.3" step="0.01" value="0.02" oninput="document.getElementById('svd-aug-v').textContent=parseFloat(this.value).toFixed(2)" id="svd-aug">
+    </div>
+  </div>
+
+  <!-- Common params -->
+  <div class="section">
+    <div class="section-title">生成パラメーター</div>
+    <div class="two-col">
+      <div class="ctrl-row"><div class="ctrl-label">Frames <span id="frames-v">120</span></div><input type="range" min="16" max="600" step="8" value="120" oninput="document.getElementById('frames-v').textContent=this.value" id="param-frames"></div>
+      <div class="ctrl-row"><div class="ctrl-label">FPS <span id="fps-v">12</span></div><input type="range" min="6" max="30" value="12" oninput="document.getElementById('fps-v').textContent=this.value" id="param-fps"></div>
+      <div class="ctrl-row"><div class="ctrl-label">Steps <span id="steps-v">25</span></div><input type="range" min="10" max="50" value="25" oninput="document.getElementById('steps-v').textContent=this.value" id="param-steps"></div>
+      <div class="ctrl-row"><div class="ctrl-label">CFG <span id="cfg-v">7.0</span></div><input type="range" min="1" max="15" step=".5" value="7" oninput="document.getElementById('cfg-v').textContent=parseFloat(this.value).toFixed(1)" id="param-cfg"></div>
+    </div>
+    <div class="ctrl-row"><div class="ctrl-label">ネガティブプロンプト</div><input type="text" id="neg-prompt" value="blurry, lowres, bad anatomy, ugly, deformed"></div>
+    <div class="ctrl-row"><div class="ctrl-label">Sampler</div><select id="sampler"><option>DPM++ 2M Karras</option><option>Euler a</option><option>DDIM</option><option>DPM++ SDE Karras</option></select></div>
+  </div>
+</div>
+
+<!-- ═══ CONTENT ═══ -->
+<div class="content">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('studio')">スタジオ</button>
+    <button class="tab" onclick="switchTab('sequencer')">シーケンサー</button>
+    <button class="tab" onclick="switchTab('history')">履歴</button>
+  </div>
+
+  <!-- STUDIO -->
+  <div id="tab-studio">
+    <!-- Timeline -->
+    <div class="tl-wrap">
+      <div class="tl-head">
+        <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);">TIMELINE</span>
+        <div style="display:flex;gap:.4rem;align-items:center;">
+          <button class="btn btn-sm" onclick="addKeyframe()">+ KF追加</button>
+          <input type="number" id="tl-total" value="120" min="16" max="600" style="width:55px;text-align:center;" oninput="renderTL()">
+          <span style="font-size:10px;color:var(--muted2);">frames</span>
+        </div>
+      </div>
+      <div class="tl-canvas" id="tl-canvas" onclick="onTLClick(event)">
+        <div class="tl-ruler" id="tl-ruler"></div>
+        <div class="tl-ph" id="tl-ph" style="left:0;"></div>
+      </div>
+      <div class="kf-list" id="kf-list"></div>
+    </div>
+
+    <!-- Input image -->
+    <div id="input-panel" style="display:none;margin-bottom:.9rem;">
+      <div style="background:var(--s1);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;gap:.75rem;padding:.65rem;cursor:pointer;" onclick="document.getElementById('input-file').click()">
+        <div id="input-thumb" style="width:54px;height:54px;background:var(--s2);border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1.4rem;flex-shrink:0;">↑</div>
+        <div><div style="font-size:12px;margin-bottom:2px;">クリックして入力画像を選択</div><div style="font-size:10px;color:var(--muted2);">SVDは必須 / AnimateDiffは任意</div></div>
+      </div>
+      <input type="file" id="input-file" accept="image/*" style="display:none" onchange="loadInput(this)">
+    </div>
+
+    <!-- Preview -->
+    <div class="preview">
+      <div class="preview-top" id="preview-top">
+        <div class="preview-hint" id="prev-hint"><div style="font-size:2.5rem;">▶</div><p>タイムライン設定後に生成</p></div>
+        <video id="prev-video" controls loop style="max-width:100%;max-height:300px;display:none;"></video>
+        <img id="prev-img" style="max-width:100%;max-height:300px;display:none;">
+        <div id="gen-spin" style="display:none;position:absolute;flex-direction:column;align-items:center;gap:.6rem;">
+          <div class="spinner-ring"></div>
+          <div id="spin-txt" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);">生成中...</div>
+        </div>
+      </div>
+      <div class="preview-btm">
+        <button class="btn btn-sm" id="dl-btn" onclick="downloadResult()" style="display:none;">↓ 保存</button>
+        <button class="btn btn-sm" id="use-btn" onclick="useAsInput()" style="display:none;">← 入力に使用</button>
+        <span id="res-info" style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);margin-left:auto;"></span>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="prog-wrap">
+      <div class="pb-bg"><div class="pb-fill" id="pb-fill"></div></div>
+      <div class="pb-text" id="pb-text">待機中...</div>
+    </div>
+
+    <button class="btn btn-accent btn-gen" id="gen-btn" onclick="generate()">生成する →</button>
+  </div>
+
+  <!-- SEQUENCER -->
+  <div id="tab-sequencer" style="display:none;">
+    <div class="section">
+      <div class="section-title">表情を選択してグリッドをクリック</div>
+      <div class="seq-exprs" id="seq-exprs">
+        <button class="seq-expr active" data-expr="neutral" onclick="selSeqExpr(this)">😐 無</button>
+        <button class="seq-expr" data-expr="smile" onclick="selSeqExpr(this)">😊 笑</button>
+        <button class="seq-expr" data-expr="laugh" onclick="selSeqExpr(this)">😄 爆笑</button>
+        <button class="seq-expr" data-expr="sad" onclick="selSeqExpr(this)">😢 悲</button>
+        <button class="seq-expr" data-expr="angry" onclick="selSeqExpr(this)">😠 怒</button>
+        <button class="seq-expr" data-expr="surprise" onclick="selSeqExpr(this)">😲 驚</button>
+        <button class="seq-expr" data-expr="wink" onclick="selSeqExpr(this)">😉 ウィンク</button>
+        <button class="seq-expr" data-expr="shy" onclick="selSeqExpr(this)">😳 照れ</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">16ステップ シーケンサー</div>
+      <div style="display:grid;grid-template-columns:repeat(16,1fr);gap:2px;margin-bottom:4px;" id="seq-labels2"></div>
+      <div class="seq-grid" id="seq-grid"></div>
+      <div style="display:flex;align-items:center;gap:.6rem;margin-top:.65rem;flex-wrap:wrap;">
+        <button class="btn" id="seq-play-btn" onclick="toggleSeqPlay()">▶ プレビュー</button>
+        <label style="font-size:11px;color:var(--muted2);">BPM <input type="number" id="seq-bpm" value="120" style="width:55px;display:inline;margin-left:4px;"></label>
+        <label style="font-size:11px;color:var(--muted2);">フレーム/ビート <input type="number" id="seq-fpb" value="8" style="width:45px;display:inline;margin-left:4px;"></label>
+        <button class="btn btn-accent" onclick="seqToStudio()">スタジオで生成 →</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">シーケンス内容</div>
+      <pre id="seq-preview" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:.65rem;line-height:1.8;max-height:200px;overflow-y:auto;white-space:pre-wrap;"></pre>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="tab-history" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem;">
+      <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);">生成履歴</span>
+      <button class="btn btn-sm" onclick="clearHist()">全削除</button>
+    </div>
+    <div class="hist-grid" id="hist-grid"><div style="font-size:12px;color:var(--muted2);padding:2rem;text-align:center;grid-column:1/-1;">まだ履歴がありません</div></div>
+  </div>
+</div>
+</div>
+
+<script>
+// ═══ STATE ═══
+const EXPRS={
+  neutral:{p:'neutral calm expression',n:'smiling,emotional'},
+  smile:{p:'smiling warmly, warm happy smile',n:'sad,angry'},
+  laugh:{p:'laughing joyfully, big open smile',n:'sad,neutral'},
+  sad:{p:'sad expression, melancholy, glassy teary eyes',n:'happy,smiling'},
+  angry:{p:'angry furrowed brow, intense stare',n:'happy,calm'},
+  surprise:{p:'surprised wide eyes, raised brows, open mouth',n:'calm,neutral'},
+  wink:{p:'winking playfully, slight smirk',n:'serious'},
+  shy:{p:'embarrassed shy blushing',n:'confident'},
+  sleepy:{p:'sleepy drowsy heavy eyelids',n:'alert'},
+  smug:{p:'smug confident raised eyebrow',n:'humble'},
+};
+const ENAMES={neutral:'無表情',smile:'笑顔',laugh:'大笑い',sad:'悲しい',angry:'怒り',surprise:'驚き',wink:'ウィンク',shy:'照れ',sleepy:'眠そう',smug:'得意げ'};
+const EMOJIS={neutral:'😐',smile:'😊',laugh:'😄',sad:'😢',angry:'😠',surprise:'😲',wink:'😉',shy:'😳',sleepy:'😴',smug:'😏'};
+
+let currentMode='deforum';
+let inputB64=null;
+let resultSrc=null;
+let activeKf=0;
+let progTimer=null;
+let seqPlayTimer=null;
+let seqStep=0;
+let selSeqExprKey='neutral';
+let seqCells=Array(16).fill(null);
+
+let keyframes=[
+  {frame:0,   weights:{neutral:100},custom:''},
+  {frame:60,  weights:{smile:100},  custom:''},
+  {frame:120, weights:{laugh:100},  custom:''},
+];
+
+// ═══ INIT ═══
+function init(){
+  buildBlender();
+  buildSeqGrid();
+  renderTL();
+  renderKfList();
+  loadHist();
+}
+
+// ═══ BLENDER ═══
+function buildBlender(){
+  document.getElementById('expr-sliders').innerHTML=
+    Object.keys(EXPRS).map(k=>`
+      <div class="expr-row">
+        <span class="expr-name">${ENAMES[k]}</span>
+        <input type="range" min="0" max="100" value="${k==='neutral'?100:0}" id="b-${k}"
+          oninput="onBlend('${k}',this.value)">
+        <span class="expr-val" id="bv-${k}">${k==='neutral'?100:0}</span>
+      </div>`).join('');
+}
+function onBlend(k,v){
+  document.getElementById('bv-'+k).textContent=v;
+  if(keyframes[activeKf]){keyframes[activeKf].weights=getWeights();renderKfList();renderTL();}
+}
+function getWeights(){
+  const w={};
+  Object.keys(EXPRS).forEach(k=>{const v=parseInt(document.getElementById('b-'+k).value);if(v>0)w[k]=v;});
+  return w;
+}
+function setWeights(w){
+  Object.keys(EXPRS).forEach(k=>{
+    const v=w[k]||0;
+    document.getElementById('b-'+k).value=v;
+    document.getElementById('bv-'+k).textContent=v;
+  });
+}
+function resetBlender(){
+  Object.keys(EXPRS).forEach(k=>{document.getElementById('b-'+k).value=0;document.getElementById('bv-'+k).textContent=0;});
+  document.getElementById('b-neutral').value=100;document.getElementById('bv-neutral').textContent=100;
+  if(keyframes[activeKf]){keyframes[activeKf].weights={neutral:100};renderKfList();renderTL();}
+}
+function weightsToPrompt(w){
+  const entries=Object.entries(w).filter(([,v])=>v>0);
+  if(!entries.length)return EXPRS.neutral.p;
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  return entries.map(([k,v])=>v/total>0.4?EXPRS[k].p:EXPRS[k].p.split(',')[0]).join(', ');
+}
+
+// ═══ TIMELINE ═══
+let dragging=null,dragX0=0,dragF0=0;
+
+function renderTL(){
+  const total=parseInt(document.getElementById('tl-total').value)||120;
+  const cv=document.getElementById('tl-canvas');
+  cv.querySelectorAll('.tl-kf').forEach(e=>e.remove());
+  keyframes.forEach((kf,i)=>{
+    const pct=(kf.frame/total)*100;
+    const el=document.createElement('div');
+    el.className='tl-kf';
+    el.style.cssText=`left:${pct}%;background:${i===activeKf?'var(--accent)':'#555'};`;
+    const exprKey=Object.entries(kf.weights).sort((a,b)=>b[1]-a[1])[0]?.[0]||'neutral';
+    el.innerHTML=`<div class="tl-kf-dot" style="background:${i===activeKf?'var(--accent)':'#555'};"></div><div class="tl-kf-lbl" style="color:${i===activeKf?'var(--accent)':'#555'};">${EMOJIS[exprKey]||''} ${kf.frame}</div>`;
+    el.addEventListener('mousedown',ev=>{ev.stopPropagation();dragging=i;dragX0=ev.clientX;dragF0=kf.frame;selectKf(i);});
+    el.addEventListener('click',ev=>{ev.stopPropagation();selectKf(i);});
+    cv.appendChild(el);
+  });
+  // Ruler
+  const ruler=document.getElementById('tl-ruler');ruler.innerHTML='';
+  const step=total<=120?20:total<=300?50:100;
+  for(let f=0;f<=total;f+=step){
+    const t=document.createElement('div');
+    t.style.cssText=`position:absolute;left:${(f/total)*100}%;top:3px;font-family:'Space Mono',monospace;font-size:8px;color:var(--muted);transform:translateX(-50%);`;
+    t.textContent=f;ruler.appendChild(t);
+  }
+}
+
+document.addEventListener('mousemove',ev=>{
+  if(dragging===null)return;
+  const cv=document.getElementById('tl-canvas');
+  const rect=cv.getBoundingClientRect();
+  const total=parseInt(document.getElementById('tl-total').value)||120;
+  const dframe=Math.round(((ev.clientX-dragX0)/rect.width)*total);
+  keyframes[dragging].frame=Math.max(0,Math.min(total,dragF0+dframe));
+  renderTL();renderKfList();
+});
+document.addEventListener('mouseup',()=>{
+  if(dragging!==null){dragging=null;keyframes.sort((a,b)=>a.frame-b.frame);renderTL();renderKfList();}
+});
+
+function onTLClick(ev){
+  if(ev.target.closest('.tl-kf'))return;
+  const rect=ev.currentTarget.getBoundingClientRect();
+  const total=parseInt(document.getElementById('tl-total').value)||120;
+  const frame=Math.round(((ev.clientX-rect.left)/rect.width)*total);
+  addKfAt(frame);
+}
+
+function addKeyframe(){
+  const total=parseInt(document.getElementById('tl-total').value)||120;
+  addKfAt(Math.min((keyframes[keyframes.length-1]?.frame||0)+20,total));
+}
+
+function addKfAt(frame){
+  keyframes.push({frame,weights:getWeights(),custom:''});
+  keyframes.sort((a,b)=>a.frame-b.frame);
+  activeKf=keyframes.findIndex(k=>k.frame===frame);
+  renderTL();renderKfList();
+  document.getElementById('tl-ph').style.left=((frame/(parseInt(document.getElementById('tl-total').value)||120))*100)+'%';
+}
+
+function selectKf(i){
+  activeKf=i;
+  setWeights(keyframes[i].weights);
+  renderTL();renderKfList();
+  const total=parseInt(document.getElementById('tl-total').value)||120;
+  document.getElementById('tl-ph').style.left=((keyframes[i].frame/total)*100)+'%';
+}
+
+function renderKfList(){
+  document.getElementById('kf-list').innerHTML=keyframes.map((kf,i)=>{
+    const desc=Object.entries(kf.weights).filter(([,v])=>v>0).map(([k,v])=>`${ENAMES[k]}:${v}%`).join(' ')||'(未設定)';
+    return`<div class="kf-item ${i===activeKf?'sel':''}" onclick="selectKf(${i})">
+      <div class="kf-num">${kf.frame}</div>
+      <div class="kf-desc">${desc}</div>
+      <button class="btn btn-icon" style="color:var(--red);" onclick="event.stopPropagation();removeKf(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function removeKf(i){if(keyframes.length<=1)return;keyframes.splice(i,1);activeKf=Math.min(activeKf,keyframes.length-1);renderTL();renderKfList();}
+
+function buildPromptSeries(){
+  const base='masterpiece, best quality, detailed face, sharp focus';
+  const series={};
+  keyframes.forEach(kf=>{
+    const p=kf.custom.trim()||(weightsToPrompt(kf.weights)+', '+base);
+    series[kf.frame]=p;
+  });
+  return JSON.stringify(series);
+}
+
+// ═══ AI MOTION PARSE ═══
+async function parseMotion(){
+  const desc=document.getElementById('motion-desc').value.trim();
+  if(!desc)return;
+  const key=document.getElementById('claude-key').value.trim();
+  if(!key){alert('Claude APIキーを入力してください');return;}
+  const out=document.getElementById('motion-out');
+  out.style.display='block';out.textContent='解析中...';
+  const total=parseInt(document.getElementById('tl-total').value)||120;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:800,
+        system:`Convert motion description to Deforum animation parameters. Output ONLY valid JSON (no markdown):
+{"translation_x":"Deforum curve e.g. 0:(0), 30:(5)","translation_y":"curve","rotation_3d_y":"curve for head turn (left=negative)","zoom":"curve","keyframes":[{"frame":0,"expr":"neutral","note":"desc"}],"summary":"Japanese summary"}
+Available expr: neutral,smile,laugh,sad,angry,surprise,wink,shy,sleepy,smug. Total frames:${total}`,
+        messages:[{role:'user',content:`モーション: ${desc}`}]
+      })
+    });
+    const d=await r.json();
+    const text=d.content?.find(b=>b.type==='text')?.text||'';
+    const p=JSON.parse(text.replace(/```json|```/g,'').trim());
+    if(p.translation_x)document.getElementById('df-tx').value=p.translation_x;
+    if(p.translation_y)document.getElementById('df-ty').value=p.translation_y;
+    if(p.rotation_3d_y)document.getElementById('df-ry').value=p.rotation_3d_y;
+    if(p.zoom)document.getElementById('df-zoom').value=p.zoom;
+    if(p.keyframes?.length){
+      keyframes=p.keyframes.map(kf=>({frame:kf.frame,weights:{[kf.expr]:100},custom:''}));
+      renderTL();renderKfList();selectKf(0);
+    }
+    out.textContent=`✦ ${p.summary||'変換完了'}\n\nTX: ${p.translation_x||'-'}\nRY: ${p.rotation_3d_y||'-'}\nZoom: ${p.zoom||'-'}\n\nキーフレーム:\n`+(p.keyframes||[]).map(k=>`  frame ${k.frame}: ${ENAMES[k.expr]||k.expr} — ${k.note||''}`).join('\n');
+  }catch(e){out.textContent='エラー: '+e.message;}
+}
+
+// ═══ MODE ═══
+function setMode(m){
+  currentMode=m;
+  document.querySelectorAll('.sidebar .tabs .tab').forEach((t,i)=>t.classList.toggle('active',['deforum','animatediff','svd'][i]===m));
+  document.getElementById('sect-deforum').style.display=m==='deforum'?'block':'none';
+  document.getElementById('sect-svd').style.display=m==='svd'?'block':'none';
+  document.getElementById('input-panel').style.display=(m==='animatediff'||m==='svd')?'block':'none';
+}
+
+// ═══ SEQUENCER ═══
+function buildSeqGrid(){
+  const g=document.getElementById('seq-grid');
+  const lb=document.getElementById('seq-labels2');
+  g.innerHTML='';lb.innerHTML='';
+  for(let i=0;i<16;i++){
+    const l=document.createElement('div');l.style.cssText='font-family:\'Space Mono\',monospace;font-size:8px;color:var(--muted2);text-align:center;';l.textContent=i+1;lb.appendChild(l);
+    const c=document.createElement('div');c.className='seq-cell';c.id='sc-'+i;c.onclick=()=>toggleCell(i);g.appendChild(c);
+  }
+  updateSeqPreview();
+}
+function selSeqExpr(btn){document.querySelectorAll('.seq-expr').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selSeqExprKey=btn.dataset.expr;}
+function toggleCell(i){
+  if(seqCells[i]===selSeqExprKey){seqCells[i]=null;const c=document.getElementById('sc-'+i);c.className='seq-cell';c.textContent='';}
+  else{seqCells[i]=selSeqExprKey;const c=document.getElementById('sc-'+i);c.className='seq-cell on';c.textContent=EMOJIS[selSeqExprKey]||selSeqExprKey;}
+  updateSeqPreview();
+}
+function updateSeqPreview(){
+  const fpb=parseInt(document.getElementById('seq-fpb').value)||8;
+  document.getElementById('seq-preview').textContent=seqCells.map((e,i)=>e?`frame ${String(i*fpb).padStart(4)}: ${ENAMES[e]||e} → ${EXPRS[e]?.p||''}`:null).filter(Boolean).join('\n')||'（未設定）';
+}
+
+let seqPlayInt=null;
+function toggleSeqPlay(){
+  if(seqPlayInt){clearInterval(seqPlayInt);seqPlayInt=null;document.getElementById('seq-play-btn').textContent='▶ プレビュー';document.querySelectorAll('.seq-cell').forEach(c=>c.classList.remove('playing'));return;}
+  const bpm=parseInt(document.getElementById('seq-bpm').value)||120;
+  const intv=(60000/bpm)/4;
+  seqStep=0;document.getElementById('seq-play-btn').textContent='■ 停止';
+  seqPlayInt=setInterval(()=>{document.querySelectorAll('.seq-cell').forEach(c=>c.classList.remove('playing'));document.getElementById('sc-'+seqStep).classList.add('playing');seqStep=(seqStep+1)%16;},intv);
+}
+function seqToStudio(){
+  const fpb=parseInt(document.getElementById('seq-fpb').value)||8;
+  const kfs=seqCells.map((e,i)=>e?{frame:i*fpb,weights:{[e]:100},custom:''}:null).filter(Boolean);
+  if(!kfs.length){alert('最低1つのセルを設定してください');return;}
+  keyframes=kfs;
+  const total=16*fpb;
+  document.getElementById('tl-total').value=total;
+  document.getElementById('param-frames').value=Math.min(total,600);
+  document.getElementById('frames-v').textContent=Math.min(total,600);
+  renderTL();renderKfList();selectKf(0);
+  switchTab('studio');
+  generate();
+}
+
+// ═══ GENERATE ═══
+async function generate(){
+  setGen(true);startProg();
+  try{
+    if(currentMode==='deforum')await genDeforum();
+    else if(currentMode==='animatediff')await genAnimateDiff();
+    else await genSVD();
+  }catch(e){alert('エラー: '+e.message+'\n\n拡張・モデルを確認してください。');}
+  finally{setGen(false);stopProg();}
+}
+
+async function genDeforum(){
+  const animMode=document.querySelector('#anim-chips .chip.active')?.dataset?.val||'2D';
+  const payload={
+    animation_mode:animMode,max_frames:parseInt(document.getElementById('param-frames').value),
+    fps:parseInt(document.getElementById('param-fps').value),steps:parseInt(document.getElementById('param-steps').value),
+    cfg_scale:parseFloat(document.getElementById('param-cfg').value),sampler:document.getElementById('sampler').value,
+    prompt_series:buildPromptSeries(),negative_prompt:document.getElementById('neg-prompt').value,
+    translation_x:document.getElementById('df-tx').value,translation_y:document.getElementById('df-ty').value,
+    rotation_3d_y:document.getElementById('df-ry').value,zoom:document.getElementById('df-zoom').value,
+    color_coherence:'LAB',diffusion_cadence:'2',use_depth_warping:animMode==='3D',make_gif:false,
+  };
+  const r=await fetch(sdUrl()+'/deforum_api/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deforum_settings:payload})});
+  const d=await r.json();
+  document.getElementById('pb-fill').style.width='100%';
+  document.getElementById('pb-text').textContent='完了 — outputs/deforumフォルダを確認してください';
+  document.getElementById('prev-hint').style.display='none';
+  document.getElementById('prev-img').src=`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='80'><text x='50%' y='55%' font-family='monospace' font-size='11' fill='%23555' text-anchor='middle'>Deforum: outputs/deforum フォルダに保存されます</text></svg>`;
+  document.getElementById('prev-img').style.display='block';
+  saveHist({mode:'DEFORUM',frames:payload.max_frames,time:new Date().toLocaleString()});
+}
+
+async function genAnimateDiff(){
+  const prompt=weightsToPrompt(keyframes[0]?.weights||{neutral:100})+', masterpiece, best quality, detailed face';
+  const alwayson={'AnimateDiff':{args:[{enable:true,model:'mm_sd_v15_v2.ckpt',format:['GIF','MP4'],video_length:parseInt(document.getElementById('param-frames').value),fps:parseInt(document.getElementById('param-fps').value),loop_number:0,closed_loop:'R+P',batch_size:1,stride:1,overlap:-1}]}};
+  const payload={prompt,negative_prompt:document.getElementById('neg-prompt').value,steps:parseInt(document.getElementById('param-steps').value),cfg_scale:parseFloat(document.getElementById('param-cfg').value),seed:-1,width:512,height:512,batch_size:1,alwayson_scripts:alwayson};
+  if(inputB64){payload.init_images=[inputB64];payload.denoising_strength=0.7;}
+  const ep=inputB64?'/sdapi/v1/img2img':'/sdapi/v1/txt2img';
+  const r=await fetch(sdUrl()+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const d=await r.json();
+  if(d.images?.[0])showVideo('data:video/mp4;base64,'+d.images[0]);
+  else throw new Error(d.info||JSON.stringify(d));
+}
+
+async function genSVD(){
+  if(!inputB64)throw new Error('SVDには入力画像が必要です');
+  const payload={image:inputB64,num_frames:parseInt(document.getElementById('param-frames').value),fps_id:parseInt(document.getElementById('param-fps').value),motion_bucket_id:parseInt(document.getElementById('svd-mb').value),cond_aug:parseFloat(document.getElementById('svd-aug').value),decoding_t:8,seed:-1};
+  const r=await fetch(sdUrl()+'/sdapi/v1/svd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const d=await r.json();
+  if(d.video)showVideo('data:video/mp4;base64,'+d.video);
+  else throw new Error(JSON.stringify(d));
+}
+
+function showVideo(src){
+  const v=document.getElementById('prev-video');v.src=src;v.style.display='block';
+  document.getElementById('prev-hint').style.display='none';document.getElementById('prev-img').style.display='none';
+  document.getElementById('dl-btn').style.display='inline-flex';document.getElementById('use-btn').style.display='inline-flex';
+  resultSrc=src;saveHist({mode:currentMode.toUpperCase(),src,time:new Date().toLocaleString()});
+}
+
+function setGen(on){
+  document.getElementById('gen-btn').disabled=on;document.getElementById('gen-btn').textContent=on?'生成中...':'生成する →';
+  document.getElementById('gen-spin').style.display=on?'flex':'none';
+}
+function startProg(){
+  document.getElementById('prog-wrap').style.display='block';document.getElementById('pb-fill').style.width='0%';
+  progTimer=setInterval(async()=>{
+    try{const r=await fetch(sdUrl()+'/sdapi/v1/progress');const d=await r.json();
+    const pct=Math.round((d.progress||0)*100);document.getElementById('pb-fill').style.width=pct+'%';
+    document.getElementById('pb-text').textContent=`${pct}% — step ${d.state?.sampling_step||0}/${d.state?.sampling_steps||'?'}`;
+    document.getElementById('spin-txt').textContent=pct+'%';}catch{}},1000);
+}
+function stopProg(){clearInterval(progTimer);document.getElementById('pb-fill').style.width='100%';}
+
+function loadInput(inp){
+  const f=inp.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    inputB64=ev.target.result.split(',')[1];
+    document.getElementById('input-thumb').innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:3px;">`;
+  };reader.readAsDataURL(f);
+}
+function downloadResult(){if(!resultSrc)return;const a=document.createElement('a');a.href=resultSrc;a.download=`sd-studio-${Date.now()}.mp4`;a.click();}
+function useAsInput(){if(!resultSrc)return;inputB64=resultSrc.split(',')[1];document.getElementById('input-panel').style.display='block';document.getElementById('input-thumb').innerHTML=`<img src="${resultSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:3px;">`;}
+
+// ═══ HISTORY ═══
+function saveHist(item){try{const h=JSON.parse(localStorage.getItem('sdstudio-hist')||'[]');h.unshift(item);if(h.length>20)h.pop();localStorage.setItem('sdstudio-hist',JSON.stringify(h));loadHist();}catch{}}
+function loadHist(){
+  try{const h=JSON.parse(localStorage.getItem('sdstudio-hist')||'[]');const g=document.getElementById('hist-grid');
+  if(!h.length){g.innerHTML='<div style="font-size:12px;color:var(--muted2);padding:2rem;text-align:center;grid-column:1/-1;">まだ履歴がありません</div>';return;}
+  g.innerHTML=h.map((item,i)=>`<div class="hist-card" onclick="loadHist_${i}()">
+    ${item.src?`<video class="hist-thumb" src="${item.src}" muted loop onmouseenter="this.play()" onmouseleave="this.pause()"></video>`:'<div class="hist-thumb" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">🎬</div>'}
+    <div class="hist-info"><div class="hist-mode">${item.mode}</div><div class="hist-time">${item.time}</div>${item.frames?`<div class="hist-time">${item.frames}f</div>`:''}</div>
+  </div>`).join('');
+  h.forEach((item,i)=>{window[`loadHist_${i}`]=()=>{if(item.src){showVideo(item.src);switchTab('studio');}};});}catch{}
+}
+function clearHist(){if(!confirm('履歴を全削除しますか？'))return;localStorage.removeItem('sdstudio-hist');loadHist();}
+
+// ═══ UTILS ═══
+function switchTab(name){
+  ['studio','sequencer','history'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===name?'block':'none';});
+  document.querySelectorAll('.content>.tabs .tab').forEach((t,i)=>t.classList.toggle('active',['studio','sequencer','history'][i]===name));
+  if(name==='sequencer')updateSeqPreview();
+}
+function selectChipIn(groupId,el){document.getElementById(groupId).querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+async function checkConn(){
+  setStatus(false,'確認中...');
+  try{const r=await fetch(sdUrl()+'/sdapi/v1/options');r.ok?setStatus(true,'接続済み'):setStatus(false,'エラー '+r.status);}
+  catch{setStatus(false,'接続失敗');}
+}
+function setStatus(on,t){document.getElementById('sdot').className='dot'+(on?' on':'');document.getElementById('stext').textContent=t;}
+const sdUrl=()=>document.getElementById('sd-url').value.replace(/\/$/,'');
+
+init();
+</script>
+</body>
+</html>
