@@ -176,9 +176,9 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
 <!-- ═══ SIDEBAR ═══ -->
 <div class="sidebar">
   <div class="tabs" style="margin-bottom:.85rem;">
-    <button class="tab active" onclick="setMode('deforum')">DEFORUM</button>
-    <button class="tab" onclick="setMode('animatediff')">ANIMATE</button>
-    <button class="tab" onclick="setMode('svd')">SVD</button>
+    <button class="tab active" onclick="setMode('deforum')">キーフレームアニメ</button>
+    <button class="tab" onclick="setMode('animatediff')">動き付き動画</button>
+    <button class="tab" onclick="setMode('svd')">画像から動画</button>
   </div>
 
   <div class="section">
@@ -200,14 +200,14 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
   </div>
 
   <div id="sect-deforum" class="section">
-    <div class="section-title">カメラ・モーション</div>
+    <div class="section-title">カメラの動き方</div>
     <div class="two-col">
-      <div class="ctrl-row"><div class="ctrl-label">Translate X</div><input type="text" id="df-tx" value="0:(0)"></div>
-      <div class="ctrl-row"><div class="ctrl-label">Translate Y</div><input type="text" id="df-ty" value="0:(0)"></div>
-      <div class="ctrl-row"><div class="ctrl-label">Rotation Y</div><input type="text" id="df-ry" value="0:(0)"></div>
+      <div class="ctrl-row"><div class="ctrl-label">カメラ左右移動</div><input type="text" id="df-tx" value="0:(0)"></div>
+      <div class="ctrl-row"><div class="ctrl-label">カメラ上下移動</div><input type="text" id="df-ty" value="0:(0)"></div>
+      <div class="ctrl-row"><div class="ctrl-label">頭の向き（左右）</div><input type="text" id="df-ry" value="0:(0)"></div>
       <div class="ctrl-row"><div class="ctrl-label">Zoom</div><input type="text" id="df-zoom" value="0:(1.02)"></div>
     </div>
-    <div class="ctrl-row"><div class="ctrl-label">アニメーションモード</div>
+    <div class="ctrl-row"><div class="ctrl-label">動かし方</div>
       <div class="chips" id="anim-chips">
         <button class="chip active" data-val="2D" onclick="selectChipIn('anim-chips',this)">2D</button>
         <button class="chip" data-val="3D" onclick="selectChipIn('anim-chips',this)">3D</button>
@@ -216,25 +216,25 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
   </div>
 
   <div id="sect-svd" class="section" style="display:none;">
-    <div class="section-title">SVD パラメーター</div>
-    <div class="ctrl-row"><div class="ctrl-label">Motion Bucket <span id="svd-mb-v">90</span></div>
+    <div class="section-title">動画のパラメーター</div>
+    <div class="ctrl-row"><div class="ctrl-label">動きの激しさ <span id="svd-mb-v">90</span></div>
       <input type="range" min="1" max="255" value="90" oninput="document.getElementById('svd-mb-v').textContent=this.value" id="svd-mb">
     </div>
-    <div class="ctrl-row"><div class="ctrl-label">Augmentation <span id="svd-aug-v">0.02</span></div>
+    <div class="ctrl-row"><div class="ctrl-label">元画像の忠実さ <span id="svd-aug-v">0.02</span></div>
       <input type="range" min="0" max="0.3" step="0.01" value="0.02" oninput="document.getElementById('svd-aug-v').textContent=parseFloat(this.value).toFixed(2)" id="svd-aug">
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">生成パラメーター</div>
+    <div class="section-title">詳細設定</div>
     <div class="two-col">
-      <div class="ctrl-row"><div class="ctrl-label">Frames <span id="frames-v">120</span></div><input type="range" min="16" max="600" step="8" value="120" oninput="document.getElementById('frames-v').textContent=this.value" id="param-frames"></div>
-      <div class="ctrl-row"><div class="ctrl-label">FPS <span id="fps-v">12</span></div><input type="range" min="6" max="30" value="12" oninput="document.getElementById('fps-v').textContent=this.value" id="param-fps"></div>
-      <div class="ctrl-row"><div class="ctrl-label">Steps <span id="steps-v">25</span></div><input type="range" min="10" max="50" value="25" oninput="document.getElementById('steps-v').textContent=this.value" id="param-steps"></div>
-      <div class="ctrl-row"><div class="ctrl-label">CFG <span id="cfg-v">7.0</span></div><input type="range" min="1" max="15" step=".5" value="7" oninput="document.getElementById('cfg-v').textContent=parseFloat(this.value).toFixed(1)" id="param-cfg"></div>
+      <div class="ctrl-row"><div class="ctrl-label">動画の長さ（フレーム数）<span id="frames-v">120</span></div><input type="range" min="16" max="600" step="8" value="120" oninput="document.getElementById('frames-v').textContent=this.value" id="param-frames"></div>
+      <div class="ctrl-row"><div class="ctrl-label">再生速度（fps）<span id="fps-v">12</span></div><input type="range" min="6" max="30" value="12" oninput="document.getElementById('fps-v').textContent=this.value" id="param-fps"></div>
+      <div class="ctrl-row"><div class="ctrl-label">品質（高いほど精細）<span id="steps-v">25</span></div><input type="range" min="10" max="50" value="25" oninput="document.getElementById('steps-v').textContent=this.value" id="param-steps"></div>
+      <div class="ctrl-row"><div class="ctrl-label">プロンプト忠実度 <span id="cfg-v">7.0</span></div><input type="range" min="1" max="15" step=".5" value="7" oninput="document.getElementById('cfg-v').textContent=parseFloat(this.value).toFixed(1)" id="param-cfg"></div>
     </div>
-    <div class="ctrl-row"><div class="ctrl-label">ネガティブ</div><input type="text" id="neg-prompt" value="blurry, lowres, bad anatomy, ugly, deformed"></div>
-    <div class="ctrl-row"><div class="ctrl-label">Sampler</div><select id="sampler"><option>DPM++ 2M Karras</option><option>Euler a</option><option>DDIM</option><option>DPM++ SDE Karras</option></select></div>
+    <div class="ctrl-row"><div class="ctrl-label">除外したい要素</div><input type="text" id="neg-prompt" value="blurry, lowres, bad anatomy, ugly, deformed"></div>
+    <div class="ctrl-row"><div class="ctrl-label">生成アルゴリズム（わからなければそのまま）</div><select id="sampler"><option>DPM++ 2M Karras</option><option>Euler a</option><option>DDIM</option><option>DPM++ SDE Karras</option></select></div>
   </div>
 </div>
 
@@ -251,9 +251,9 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
   <div id="tab-studio">
     <div class="tl-wrap">
       <div class="tl-head">
-        <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);">TIMELINE</span>
+        <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);">シーン構成</span>
         <div style="display:flex;gap:.35rem;align-items:center;">
-          <button class="btn btn-sm" onclick="addKeyframe()">+ KF</button>
+          <button class="btn btn-sm" onclick="addKeyframe()">+ シーン追加</button>
           <input type="number" id="tl-total" value="120" min="16" max="600" style="width:52px;text-align:center;" oninput="renderTL()">
           <span style="font-size:10px;color:var(--muted2);">f</span>
         </div>
@@ -268,14 +268,14 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
     <div id="input-panel" style="display:none;margin-bottom:.85rem;">
       <div style="background:var(--s1);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;gap:.7rem;padding:.6rem;cursor:pointer;" onclick="document.getElementById('input-file').click()">
         <div id="input-thumb" style="width:50px;height:50px;background:var(--s2);border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1.3rem;flex-shrink:0;">↑</div>
-        <div><div style="font-size:12px;margin-bottom:2px;">入力画像を選択</div><div style="font-size:10px;color:var(--muted2);">SVDは必須 / AnimateDiffは任意</div></div>
+        <div><div style="font-size:12px;margin-bottom:2px;">元になる画像を選ぶ</div><div style="font-size:10px;color:var(--muted2);">「画像から動画」は必須・「動き付き動画」は任意</div></div>
       </div>
       <input type="file" id="input-file" accept="image/*" style="display:none" onchange="loadInput(this)">
     </div>
 
     <div class="preview">
       <div class="preview-top" id="preview-top">
-        <div class="preview-hint" id="prev-hint"><div style="font-size:2.2rem;">▶</div><p>タイムライン設定後に生成</p></div>
+        <div class="preview-hint" id="prev-hint"><div style="font-size:2.2rem;">▶</div><p>シーン設定後に生成してください</p></div>
         <video id="prev-video" controls loop style="max-width:100%;max-height:280px;display:none;"></video>
         <img id="prev-img" style="max-width:100%;max-height:280px;display:none;">
         <div id="gen-spin" style="display:none;position:absolute;flex-direction:column;align-items:center;gap:.6rem;">
@@ -336,7 +336,7 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
 
     <!-- Waveform -->
     <div class="audio-panel">
-      <div class="audio-panel-head">波形ビジュアライザー
+      <div class="audio-panel-head">音声の波形
         <span id="audio-status" style="color:var(--muted2);">待機中</span>
       </div>
       <div style="padding:.7rem;">
@@ -355,7 +355,7 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
 
     <!-- Audio File Input -->
     <div class="audio-panel">
-      <div class="audio-panel-head">音声ファイル読み込み</div>
+      <div class="audio-panel-head">音声ファイルを開く</div>
       <div style="padding:.7rem;">
         <div class="audio-drop" id="audio-drop" onclick="document.getElementById('audio-file').click()">
           <div style="font-size:1.8rem;">🎵</div>
@@ -367,7 +367,7 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
 
     <!-- TTS -->
     <div class="audio-panel">
-      <div class="audio-panel-head">テキスト読み上げ (TTS)</div>
+      <div class="audio-panel-head">テキスト読み上げ</div>
       <div style="padding:.7rem;">
         <div class="ctrl-row">
           <div class="ctrl-label">言語 / 声</div>
@@ -408,7 +408,7 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
         <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);">
           <div class="ctrl-label" style="margin-bottom:.4rem;">ElevenLabs 高品質TTS <span style="color:var(--purple);">(APIキー必要)</span></div>
           <div class="ctrl-row">
-            <div class="ctrl-label">Voice ID</div>
+            <div class="ctrl-label">声のID番号</div>
             <input type="text" id="eleven-voice-id" placeholder="21m00Tcm4TlvDq8ikWAM (Rachel)">
           </div>
           <button class="btn btn-purple" style="width:100%;" onclick="speakElevenLabs()">✦ ElevenLabsで読み上げ</button>
@@ -418,7 +418,7 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
 
     <!-- STT -->
     <div class="audio-panel">
-      <div class="audio-panel-head">音声入力 (STT)</div>
+      <div class="audio-panel-head">マイクで音声入力</div>
       <div style="padding:.7rem;">
         <div class="stt-transcript" id="stt-transcript">ここに認識結果が表示されます...</div>
         <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem;">
@@ -435,7 +435,7 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
 
     <!-- Emotion Voice Mapping -->
     <div class="audio-panel">
-      <div class="audio-panel-head">感情 × 音声連動</div>
+      <div class="audio-panel-head">表情に合わせた声のトーン</div>
       <div style="padding:.7rem;">
         <p style="font-size:11px;color:var(--muted2);margin-bottom:.65rem;">表情ごとに声のパラメーターを設定。タイムライン再生時に自動適用。</p>
         <div class="emo-voice-grid" id="emo-voice-grid"></div>
@@ -445,12 +445,12 @@ input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
 
     <!-- Lipsync -->
     <div class="audio-panel">
-      <div class="audio-panel-head" style="color:var(--orange);">リップシンク (Wav2Lip)</div>
+      <div class="audio-panel-head" style="color:var(--orange);">リップシンク（口を音声に合わせて動かす）</div>
       <div style="padding:.7rem;">
         <div class="lipsync-area">
           <p style="font-size:11px;color:var(--muted2);margin-bottom:.6rem;">生成した動画 + 音声ファイルを組み合わせてリップシンク動画を生成。<br>必要: Wav2Lip SD拡張または別途Wav2Lip環境</p>
           <div class="ctrl-row">
-            <div class="ctrl-label">Wav2Lip API URL</div>
+            <div class="ctrl-label">リップシンクのサーバーURL</div>
             <input type="text" id="wav2lip-url" value="http://127.0.0.1:7861" placeholder="Wav2Lip サーバーURL">
           </div>
           <div class="two-col">
@@ -621,12 +621,12 @@ function seqToStudio(){const fpb=parseInt(document.getElementById('seq-fpb').val
 
 // ═══ GENERATE ═══
 async function generate(){setGen(true);startProg();try{if(currentMode==='deforum')await genDeforum();else if(currentMode==='animatediff')await genAnimateDiff();else await genSVD();}catch(e){alert('エラー: '+e.message);}finally{setGen(false);stopProg();}}
-async function genDeforum(){const animMode=document.querySelector('#anim-chips .chip.active')?.dataset?.val||'2D';const payload={animation_mode:animMode,max_frames:parseInt(document.getElementById('param-frames').value),fps:parseInt(document.getElementById('param-fps').value),steps:parseInt(document.getElementById('param-steps').value),cfg_scale:parseFloat(document.getElementById('param-cfg').value),sampler:document.getElementById('sampler').value,prompt_series:buildPromptSeries(),negative_prompt:document.getElementById('neg-prompt').value,translation_x:document.getElementById('df-tx').value,translation_y:document.getElementById('df-ty').value,rotation_3d_y:document.getElementById('df-ry').value,zoom:document.getElementById('df-zoom').value,color_coherence:'LAB',diffusion_cadence:'2',use_depth_warping:animMode==='3D',make_gif:false};const r=await fetch(sdUrl()+'/deforum_api/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deforum_settings:payload})});const d=await r.json();document.getElementById('pb-fill').style.width='100%';document.getElementById('pb-text').textContent='完了 — outputs/deforumフォルダを確認';document.getElementById('prev-hint').style.display='none';document.getElementById('prev-img').src=`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='60'><text x='50%' y='55%' font-family='monospace' font-size='11' fill='%23555' text-anchor='middle'>Deforum: outputs/deforum フォルダに保存</text></svg>`;document.getElementById('prev-img').style.display='block';saveHist({mode:'DEFORUM',frames:payload.max_frames,time:new Date().toLocaleString()});}
+async function genDeforum(){const animMode=document.querySelector('#anim-chips .chip.active')?.dataset?.val||'2D';const payload={animation_mode:animMode,max_frames:parseInt(document.getElementById('param-frames').value),fps:parseInt(document.getElementById('param-fps').value),steps:parseInt(document.getElementById('param-steps').value),cfg_scale:parseFloat(document.getElementById('param-cfg').value),sampler:document.getElementById('sampler').value,prompt_series:buildPromptSeries(),negative_prompt:document.getElementById('neg-prompt').value,translation_x:document.getElementById('df-tx').value,translation_y:document.getElementById('df-ty').value,rotation_3d_y:document.getElementById('df-ry').value,zoom:document.getElementById('df-zoom').value,color_coherence:'LAB',diffusion_cadence:'2',use_depth_warping:animMode==='3D',make_gif:false};const r=await fetch(sdUrl()+'/deforum_api/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deforum_settings:payload})});const d=await r.json();document.getElementById('pb-fill').style.width='100%';document.getElementById('pb-text').textContent='完了 — 出力フォルダ（outputs/deforum）に動画が保存されます';document.getElementById('prev-hint').style.display='none';document.getElementById('prev-img').src=`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='60'><text x='50%' y='55%' font-family='monospace' font-size='11' fill='%23555' text-anchor='middle'>Deforum: outputs/deforum フォルダに保存</text></svg>`;document.getElementById('prev-img').style.display='block';saveHist({mode:'DEFORUM',frames:payload.max_frames,time:new Date().toLocaleString()});}
 async function genAnimateDiff(){const prompt=weightsToPrompt(keyframes[0]?.weights||{neutral:100})+', masterpiece, best quality, detailed face';const alwayson={'AnimateDiff':{args:[{enable:true,model:'mm_sd_v15_v2.ckpt',format:['GIF','MP4'],video_length:parseInt(document.getElementById('param-frames').value),fps:parseInt(document.getElementById('param-fps').value),loop_number:0,closed_loop:'R+P',batch_size:1,stride:1,overlap:-1}]}};const payload={prompt,negative_prompt:document.getElementById('neg-prompt').value,steps:parseInt(document.getElementById('param-steps').value),cfg_scale:parseFloat(document.getElementById('param-cfg').value),seed:-1,width:512,height:512,batch_size:1,alwayson_scripts:alwayson};if(inputB64){payload.init_images=[inputB64];payload.denoising_strength=0.7;}const ep=inputB64?'/sdapi/v1/img2img':'/sdapi/v1/txt2img';const r=await fetch(sdUrl()+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json();if(d.images?.[0])showVideo('data:video/mp4;base64,'+d.images[0]);else throw new Error(d.info||JSON.stringify(d));}
-async function genSVD(){if(!inputB64)throw new Error('SVDには入力画像が必要です');const payload={image:inputB64,num_frames:parseInt(document.getElementById('param-frames').value),fps_id:parseInt(document.getElementById('param-fps').value),motion_bucket_id:parseInt(document.getElementById('svd-mb').value),cond_aug:parseFloat(document.getElementById('svd-aug').value),decoding_t:8,seed:-1};const r=await fetch(sdUrl()+'/sdapi/v1/svd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json();if(d.video)showVideo('data:video/mp4;base64,'+d.video);else throw new Error(JSON.stringify(d));}
+async function genSVD(){if(!inputB64)throw new Error('「画像から動画」には元画像が必要です');const payload={image:inputB64,num_frames:parseInt(document.getElementById('param-frames').value),fps_id:parseInt(document.getElementById('param-fps').value),motion_bucket_id:parseInt(document.getElementById('svd-mb').value),cond_aug:parseFloat(document.getElementById('svd-aug').value),decoding_t:8,seed:-1};const r=await fetch(sdUrl()+'/sdapi/v1/svd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json();if(d.video)showVideo('data:video/mp4;base64,'+d.video);else throw new Error(JSON.stringify(d));}
 function showVideo(src){const v=document.getElementById('prev-video');v.src=src;v.style.display='block';document.getElementById('prev-hint').style.display='none';document.getElementById('prev-img').style.display='none';document.getElementById('dl-btn').style.display='inline-flex';document.getElementById('use-btn').style.display='inline-flex';document.getElementById('lipsync-quick-btn').style.display='inline-flex';resultSrc=src;saveHist({mode:currentMode.toUpperCase(),src,time:new Date().toLocaleString()});}
 function setGen(on){document.getElementById('gen-btn').disabled=on;document.getElementById('gen-btn').textContent=on?'生成中...':'生成する →';document.getElementById('gen-spin').style.display=on?'flex':'none';}
-function startProg(){document.getElementById('prog-wrap').style.display='block';document.getElementById('pb-fill').style.width='0%';progTimer=setInterval(async()=>{try{const r=await fetch(sdUrl()+'/sdapi/v1/progress');const d=await r.json();const pct=Math.round((d.progress||0)*100);document.getElementById('pb-fill').style.width=pct+'%';document.getElementById('pb-text').textContent=`${pct}% — step ${d.state?.sampling_step||0}/${d.state?.sampling_steps||'?'}`;document.getElementById('spin-txt').textContent=pct+'%';}catch{}},1000);}
+function startProg(){document.getElementById('prog-wrap').style.display='block';document.getElementById('pb-fill').style.width='0%';progTimer=setInterval(async()=>{try{const r=await fetch(sdUrl()+'/sdapi/v1/progress');const d=await r.json();const pct=Math.round((d.progress||0)*100);document.getElementById('pb-fill').style.width=pct+'%';document.getElementById('pb-text').textContent=`${pct}% — ステップ ${d.state?.sampling_step||0}/${d.state?.sampling_steps||'?'}`;document.getElementById('spin-txt').textContent=pct+'%';}catch{}},1000);}
 function stopProg(){clearInterval(progTimer);document.getElementById('pb-fill').style.width='100%';}
 function loadInput(inp){const f=inp.files[0];if(!f)return;const reader=new FileReader();reader.onload=ev=>{inputB64=ev.target.result.split(',')[1];document.getElementById('input-thumb').innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:3px;">`;};reader.readAsDataURL(f);}
 function downloadResult(){if(!resultSrc)return;const a=document.createElement('a');a.href=resultSrc;a.download=`sd-studio-${Date.now()}.mp4`;a.click();}
@@ -706,7 +706,7 @@ function speakTTS(){
 function stopTTS(){if(synth)synth.cancel();}
 
 async function speakElevenLabs(){
-  const key=document.getElementById('eleven-key').value.trim();if(!key){alert('ElevenLabs APIキーを入力してください');return;}
+  const key=document.getElementById('eleven-key').value.trim();if(!key){alert('ElevenLabsのAPIキーを入力してください');return;}
   const text=document.getElementById('tts-text').value.trim();if(!text)return;
   const voiceId=document.getElementById('eleven-voice-id').value.trim()||'21m00Tcm4TlvDq8ikWAM';
   try{
